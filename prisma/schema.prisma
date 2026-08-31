@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Uma unidade do livro/currículo (ex: "Unidade 10 - 6º ano").
+// Guarda os objetivos e o sumário/tópicos que servem de base para o
+// diagnóstico de buracos (o que ainda não tem atividade cobrindo).
+model Unit {
+  id        String   @id @default(cuid())
+  name      String
+  grade     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  objectives Objective[]
+  topics     Topic[]
+  sources    Source[]
+  cycles     Cycle[]
+}
+
+model Objective {
+  id     String @id @default(cuid())
+  unitId String
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  order  Int
+  text   String
+
+  @@index([unitId])
+}
+
+// Um item do sumário da unidade (ex: "Protozoários e algas", páginas 208-209).
+// É contra essa lista que o diagnóstico de buracos compara as atividades do ciclo.
+model Topic {
+  id        String  @id @default(cuid())
+  unitId    String
+  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  order     Int
+  title     String
+  pageRange String?
+
+  sourceTopics SourceTopic[]
+  activities   Activity[]
+
+  @@index([unitId])
+}
+
+// Um livro/editora (Saber+, Telaris, Panoramas, Araribá Plus...) usado nessa unidade.
+model Source {
+  id        String  @id @default(cuid())
+  unitId    String
+  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  publisher String
+  note      String?
+
+  sourceTopics SourceTopic[]
+  activities   Activity[]
+
+  @@index([unitId])
+}
+
+// Relação N:N entre Source e Topic: em quais páginas essa editora cobre esse
+// tópico, e se já traz exercícios fechados prontos.
+model SourceTopic {
+  id            String  @id @default(cuid())
+  sourceId      String
+  source        Source  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  topicId       String
+  topic         Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  pageRange     String?
+  hasExercises  Boolean @default(false)
+  notes         String?
+
+  @@unique([sourceId, topicId])
+  @@index([topicId])
+}
+
+enum CycleLevel {
+  PARA_AQUECER
+  BASICO
+  INTERMEDIARIO
+  AVANCADO
+  FAZER_MAIS
+}
+
+enum ActivityLocation {
+  EM_SALA
+  EM_CASA
+}
+
+// O ciclo de trabalho propriamente dito (ex: "8.3.2 - Diversidade dos seres vivos").
+model Cycle {
+  id             String   @id @default(cuid())
+  unitId         String
+  unit           Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  code           String?
+  title          String
+  weeks          Int      @default(2)
+  lessonsPerWeek Int      @default(3)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  activities Activity[]
+}
+
+// Uma atividade dentro de um dos 5 níveis do ciclo.
+model Activity {
+  id           String           @id @default(cuid())
+  cycleId      String
+  cycle        Cycle            @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  level        CycleLevel
+  order        Int
+  description  String
+  location     ActivityLocation @default(EM_SALA)
+  lessonNumber Int?
+  pageRef      String?
+
+  sourceId String?
+  source   Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  topicId String?
+  topic   Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  @@index([cycleId])
+  @@index([topicId])
+}
