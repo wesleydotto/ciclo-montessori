@@ -111,3 +111,64 @@ export async function clearSourceTopicCoverage(
     });
   revalidatePath(`/units/${unitId}`);
 }
+
+export type ExtractedTopicToSave = {
+  title: string;
+  pageRange: string | null;
+  hasExercises: boolean;
+};
+
+/**
+ * Salva os tópicos revisados pelo usuário após a leitura por IA das fotos.
+ * Reaproveita um Topic já existente na unidade com o mesmo título (evita
+ * duplicar tópicos quando a mesma editora é reanalisada), e sempre cria/
+ * atualiza a cobertura (SourceTopic) para a fonte informada.
+ */
+export async function saveExtractedTopics(
+  unitId: string,
+  sourceId: string,
+  items: ExtractedTopicToSave[],
+) {
+  if (items.length === 0) return;
+
+  const existingTopics = await prisma.topic.findMany({ where: { unitId } });
+  let nextOrder = existingTopics.length;
+
+  for (const item of items) {
+    const title = item.title.trim();
+    if (!title) continue;
+
+    const match = existingTopics.find(
+      (t) => t.title.trim().toLowerCase() === title.toLowerCase(),
+    );
+
+    const topic = match
+      ? match
+      : await prisma.topic.create({
+          data: {
+            unitId,
+            title,
+            pageRange: item.pageRange,
+            order: nextOrder++,
+          },
+        });
+
+    if (!match) existingTopics.push(topic);
+
+    await prisma.sourceTopic.upsert({
+      where: { sourceId_topicId: { sourceId, topicId: topic.id } },
+      create: {
+        sourceId,
+        topicId: topic.id,
+        pageRange: item.pageRange,
+        hasExercises: item.hasExercises,
+      },
+      update: {
+        pageRange: item.pageRange,
+        hasExercises: item.hasExercises,
+      },
+    });
+  }
+
+  revalidatePath(`/units/${unitId}`);
+}

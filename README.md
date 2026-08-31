@@ -15,6 +15,12 @@ nem de internet depois de instalado.
 2. **Fontes** — cadastre as editoras usadas (Saber+, Telaris, Panoramas,
    Araribá Plus...) e, na matriz de cobertura, informe em quais páginas cada
    editora cobre cada tópico do sumário e se já traz exercícios fechados.
+   Também dá pra fazer isso automaticamente: em **"+ Analisar fotos com
+   IA"**, anexe fotos das páginas do livro e a IA (Claude) já sugere os
+   tópicos, páginas e se tem exercício — você revisa e confirma antes de
+   salvar. Requer configurar `ANTHROPIC_API_KEY` no `.env` (veja abaixo);
+   sem a chave, o resto do app funciona normalmente, só essa função fica
+   indisponível.
 3. **Diagnóstico de buracos** — a própria unidade mostra quais tópicos do
    sumário ainda não têm nenhuma fonte cadastrada ou nenhuma atividade em
    nenhum ciclo.
@@ -63,6 +69,22 @@ Abra [http://localhost:3000](http://localhost:3000) no navegador.
 Da próxima vez, basta rodar `npm run dev` de novo (o `dev.db` já existe e
 guarda tudo que você cadastrou).
 
+### Configurando a leitura de fotos por IA (opcional)
+
+1. Pegue uma chave em [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+   (precisa de uma conta com créditos/cobrança ativada).
+2. Abra o arquivo `.env` na pasta do projeto (crie a partir do
+   `.env.example` se ainda não existir) e cole a chave:
+   ```
+   ANTHROPIC_API_KEY="sk-ant-..."
+   ```
+3. Salve o arquivo e reinicie o app (feche a janela preta e abra o
+   `Iniciar-Windows.bat`/`Iniciar-Mac.command` de novo, ou `npm run dev`).
+
+Custo: cada leva de fotos analisada custa poucos centavos de dólar (a
+chamada usa o modelo Claude Sonnet 5) — cobrado direto na sua conta
+Anthropic, fora do app.
+
 ## Stack
 
 - [Next.js](https://nextjs.org/) (App Router, Server Actions) + TypeScript
@@ -71,6 +93,8 @@ guarda tudo que você cadastrou).
   guardados localmente em `dev.db`
 - [`docx`](https://www.npmjs.com/package/docx) para gerar o arquivo `.docx`
   final
+- [Anthropic SDK](https://www.npmjs.com/package/@anthropic-ai/sdk) (Claude
+  Sonnet 5) para a leitura de fotos das páginas
 
 ## Comandos úteis
 

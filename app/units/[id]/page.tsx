@@ -169,7 +169,15 @@ export default async function UnitPage({
 
       {/* Fontes / editoras */}
       <section className="rounded-lg border border-neutral-200 bg-white p-5">
-        <h2 className="font-semibold">Fontes (livros/editoras)</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Fontes (livros/editoras)</h2>
+          <Link
+            href={`/units/${unit.id}/extract`}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
+          >
+            + Analisar fotos com IA
+          </Link>
+        </div>
         <ul className="mt-2 flex flex-col gap-1">
           {unit.sources.map((s) => (
             <li key={s.id} className="flex items-center justify-between gap-2 text-sm">
