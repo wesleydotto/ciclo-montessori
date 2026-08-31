@@ -34,6 +34,23 @@ nem de internet depois de instalado.
 
 Pré-requisitos: [Node.js](https://nodejs.org/) 20 ou mais recente.
 
+### Opção fácil: arquivo de clique duplo
+
+- **Windows**: dê duplo clique em `Iniciar-Windows.bat`.
+- **Mac**: dê duplo clique em `Iniciar-Mac.command`.
+
+Na primeira vez, o Windows pode mostrar um aviso do SmartScreen ("O Windows
+protegeu o computador") — clique em **"Mais informações"** → **"Executar
+assim mesmo"**. No Mac, o Gatekeeper pode bloquear o arquivo — clique com o
+botão direito nele → **"Abrir"** → confirme.
+
+O script instala tudo que falta na primeira vez (pode demorar alguns
+minutos), prepara o banco local e abre `http://localhost:3000` sozinho no
+navegador. Para encerrar o app, feche a janela do terminal que abriu ou
+aperte `Ctrl+C` nela. Nas próximas vezes é só dar duplo clique de novo.
+
+### Opção manual (linha de comando)
+
 ```bash
 npm install          # instala as dependências e gera o client do Prisma
 cp .env.example .env # cria o arquivo de configuração do banco local
